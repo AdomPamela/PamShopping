@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>BUY WELL</title>
+    <link rel="icon" href="img/logs.png" type="image/png" style="border-radius: 20px;">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background: linear-gradient(to bottom right, #ffafbd, #ffc3a0);
+            color: #333;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        canvas {
+            display: block;
+            margin: 20px auto;
+            border: 2px solid #fff;
+            border-radius: 10px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #f76c6c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #ff3b3b;
+        }
+        
+        #locationInfo {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1 id="welcomeMessage"></h1>
+    <canvas id="canvas" width="400" height="200"></canvas>
+    <p id="locationInfo" class="hidden"></p>
+    <button id="logoutbtn" class="hidden">Logout</button>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function drawCanvas(message) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#333';
+            ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+        }
+
+        function displayLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const {
+                            latitude,
+                            longitude
+                        } = position.coords;
+                        const locationMessage = `You are at Latitude: ${latitude.toFixed(
+                            2
+                        )}, Longitude: ${longitude.toFixed(2)}`;
+                        document.getElementById("locationInfo").innerText = locationMessage;
+                        document.getElementById("locationInfo").classList.remove("hidden");
+                        drawCanvas(`${welcomeText} at (${latitude.toFixed(2)}, ${longitude.toFixed(2)})`);
+                    },
+                    (error) => {
+                        console.error("Error fetching location:", error);
+                        drawCanvas(welcomeText);
+                    }
+                );
+            } else {
+                console.error("Geolocation is not supported by this browser.");
+                drawCanvas(welcomeText);
+            }
+        }
+
+        const user = localStorage.getItem("user");
+        let welcomeText = "";
+
+        if (user) {
+            const parsedUser = JSON.parse(user);
+            welcomeText = 'Hello, ${parsedUser.name}!';
+            document.getElementById("welcomeMessage").innerHTML = welcomeText;
+            document.getElementById("logoutbtn").classList.remove("hidden");
+            displayLocation();
+        } else {
+            const loginMessage = 'Hello, please <a href="index.html">login</a>';
+            document.getElementById("welcomeMessage").innerHTML = loginMessage;
+            drawCanvas('Please login to see your details.');
+        }
+
+        document.getElementById("logoutbtn").addEventListener("click", function() {
+            localStorage.removeItem("user");
+            window.location.href = "index.html";
+        });
+    </script>
+</body>
+
+</html>
